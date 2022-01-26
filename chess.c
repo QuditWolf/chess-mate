@@ -74,13 +74,37 @@ int isvalid(const char move[]){
 	int x2= move[2] - 'A' + 1;
 	int y2 = move[3] - '0';
 	int buf = 1 - 'a';
+	// check for coord in bounds 1 <= x <= 8 
+	int d = abs(x2-x1)*10 + abs(y2-y1);
 	switch((piece)) {                         // could be used to generalize color    // - 'a' + 1)%('A' - 1)){
+		case 'P':
+			if (d==1 && board[x2][y2]==' ') return isclean(move) && ischeck(move); //one move forward
+			else if ( d=11 && board[x2][y2]!=' ') return isclean(move) && ischeck(move); //capture diagnal
+			else if ( y1==2 && d==2 && board[x2][y2]==' ') return isclean(move) && ischeck(move); //first move
+			break;
 		case 'p':
-			if (x2-x1==0 && y2-y1==1 && board[x2][y2]==' ') return ischeck(move);
-			else if ( abs(x2 - x1)==1 && y2-y1==1 && board[x2][y2]!=' ') return ischeck(move);
-			else if ( y1==2 && x2-x1==2 && board[x2][y2]==' ') return ischeck(move);
+			if (d==1 && board[x2][y2]==' ') return isclean(move) && ischeck(move); //one move forward
+			else if ( d=11 && board[x2][y2]!=' ') return isclean(move) && ischeck(move); //capture diagnal
+			else if ( y1==7 && d==2 && board[x2][y2]==' ') return isclean(move) && ischeck(move); //first move
+			break;
+			//printf("pawn encountered");
+		case 'R':
+		case 'r':
+			if ((d/10)==0 || !(d%10) ) return isclean(move) && ischeck(move);
+			break;
+		case 'N':
+		case 'n':
+			if (d==12 || d==21) return ischeck(move);
+			break;
+		case 'K':
+		case 'k':
+			if ( (d%10 <= 1) && (d/10 <= 1) && (d > 0) ) return ischeck(move);
+			break;
+		case 'Q':
+		case 'q':
+			if (((d/10)==0 || !(d%10) ) || !(d%11))  return isclean(move) && ischeck(move);
+			break;
 
-			printf("pawn encountered");
 	}
 
 	return 1;
