@@ -1,8 +1,7 @@
 #include<stdio.h>
-#include<cstring>
 #define MAX_MOVES 16000
 char board[9][9]; //one indexing //can add third dimension for backprop
-char moves[MAX_MOVES][3]; //find a better way to do this
+char moves[MAX_MOVES][5]; //find a better way to do this
 int movesn=0;
 
 
@@ -17,31 +16,45 @@ void showboard(){
 	printf("+---+---+---+---+---+---+---+---+---+\n");
 }
 
-void putpiece(const char where[2],char piece){       // put a piece somewhere
-	int y = where[0] - 'A' + 1;
-	int x = where[1] - '0';
+int putpiece(const char where[4],char piece){       // put a piece somewhere
+	int x1= where[0] - 'A' + 1;
+	int y1 = where[1] - '0';
+	int x2= where[2] - 'A' + 1;
+	int y2 = where[3] - '0';
 	//printf("putting at %d %d",x,y);
-	board[x][y]=piece;
+	if (board[x1][y1]!=piece) return -1;
+	else {
+		board[x1][y1]=' ';
+		board[x2][y2]=piece;
+		return 1;
+	}
+
 }
 
-void putmove(const char move[3]){ 		//wrapper on putpiece for entire moves
+void putmove(const char move[5]){ 		//wrapper on putpiece for entire moves
 	putpiece(move+1,move[0]);
 }
 
-bool rmpiece(char piece){       // find a piece and remove
-	int found=0;
+char wherepiece(char piece){
 	int x,y;
+	int found=0;
 	for(x = 1; x < 9; x++){
 		for(y = 1; y < 9; y++){
 			if (board[x][y] == piece){ 
-				found=1;
-				goto founded;
+				return (10*x+y);
 			}
 		}
 	}
-founded:
-	if (found){
-		//printf("putting at %d %d",x,y);
+	return -1;
+}
+
+int rmpiece(char piece){       // find a piece and remove
+	//printf("getting executed \n");
+	int found=wherepiece(piece);
+	int x,y;
+	if (found!=-1){
+		x=found/10;
+		y=found%10;
 		board[x][y]=' ';
 		if (board[x][y]==' ')
 			board[x][y]=((x+y)%2==0)?254:' ';
@@ -53,17 +66,39 @@ founded:
 		return 0;
 	}
 }
-void makemove(const char move[3]){
-	//printf("making move of %c\n",move[0]);
-	if(rmpiece(move[0]) && isvalid(move)) putpiece(move+1,move[0]);
-}	
 
+int isvalid(const char move[]){
+	char piece = move[0];
+	int x1= move[0] - 'A' + 1;
+	int y1 = move[1] - '0';
+	int x2= move[2] - 'A' + 1;
+	int y2 = move[3] - '0';
+	int buf = 1 - 'a';
+	switch((piece)) {                         // could be used to generalize color    // - 'a' + 1)%('A' - 1)){
+		case 'p':
+			if (x2-x1==0 && y2-y1==1 && board[x2][y2]==' ') return ischeck(move);
+			else if ( abs(x2 - x1)==1 && y2-y1==1 && board[x2][y2]!=' ') return ischeck(move);
+			else if ( y1==2 && x2-x1==2 && board[x2][y2]==' ') return ischeck(move);
+
+			printf("pawn encountered");
+	}
+
+	return 1;
+}
+void makemove(const char move[5]){
+	//remove the piece and find if themove is valid
+	if(isvalid(move)){
+		//rmpiece(move[0]);
+	       	putpiece(move+1,move[0]);
+		//strcpe(moves[movesn++],move);
+	}
+}	
 
 void initboard(){
 	board[0][0]='O';
-	// board labelling
+       	// board labelling
 	for(int _x = 1; _x < 9; _x++){
-		board[_x][0]=char(_x + '0');
+		board[_x][0]=(char)(_x + '0');
 	}
 	for(int _x = 1; _x < 9; _x++){
 		board[0][_x]=(char)(_x + 'A' - 1);
@@ -86,6 +121,7 @@ void initboard(){
 	}
 
 }
+
 void makeboard(){			//not used now rebuilds entire board from memory
 	initboard();
 	for( int i = 1; i <= movesn; i++){
@@ -94,12 +130,12 @@ void makeboard(){			//not used now rebuilds entire board from memory
 		makemove(move);
 	}
 }
-bool isvalid(char move[], char piece){
-	return 1;
-}
+
 int main(){
 	initboard();
 	//makeboard();
-	makemove("kD4");
+	makemove("pD2D4");
 	showboard();
+	//int loc = wherepiece('k');
+	//printf("%d %d", loc/10,loc%10);
 }
